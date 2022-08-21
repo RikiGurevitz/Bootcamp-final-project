@@ -5,7 +5,7 @@
 #include<stdio.h>
 #include<stdlib.h> // for exit()
 #include<string.h> //for memset
-
+#include<assert.h>
 #include<sys/socket.h>
 #include<arpa/inet.h> // for inet_ntoa()
 #include<net/ethernet.h>
@@ -13,6 +13,8 @@
 #include<netinet/udp.h>	//Provides declarations for udp header
 #include<netinet/tcp.h>	//Provides declarations for tcp header
 #include<netinet/ip.h>	//Provides declarations for ip header
+#define DEBUG 1
+
 
 void process_packet(u_char *, const struct pcap_pkthdr *, const u_char *);
 void process_ip_packet(const u_char * , int);
@@ -57,7 +59,7 @@ int main()
 	}
 	
 	//Ask user which device to sniff
-	printf("Enter the number of the device you want to sniff : ");
+	printf("Enter the number of the device you want to sniff  : ");
 	scanf("%d" , &n);
 	devname = devs[n];
 	
@@ -66,13 +68,16 @@ int main()
 	handle = pcap_open_live(devname , 65536 , 1 , 0 , errbuf);
 	//pcap_open_live: opens the specified network device for packet capture.
 	//params: name device,ebuf,promisc,snaplen=num of bytes to capture per packet,to_ms
-
-	if (handle == NULL) 
-	{
-		fprintf(stderr, "Couldn't open device %s : %s\n" , devname , errbuf);
-		exit(1);
-	}
-	printf("Done\n");
+    #ifdef DEBUG
+    #if (DEBUG==1)
+    assert (handle != NULL);
+    #endif
+    #if (DEBUG==0)
+    printf( "\nCannot sniff the device\n");
+	exit(1);
+    #endif
+    #endif
+	printf("Done---\n");
 	
 	logfile=fopen("log.txt","w");
 	if(logfile==NULL) 
@@ -81,8 +86,10 @@ int main()
 	}
 	
 	//Put the device in sniff loop
-	pcap_loop(handle ,-1 , process_packet , NULL);
-	
+	pcap_loop(handle ,10, process_packet , NULL);
+	pcap_freealldevs(alldevsp);
+    pcap_close(handle);
+	fclose(logfile);
 	return 0;	
 }
 
@@ -304,7 +311,7 @@ void PrintData (const u_char * data , int Size)
 	int i , j;
 	for(i=0 ; i < Size ; i++)
 	{
-		if( i!=0 && i%16==0)   //if one line of hex printing is complete...
+		if( i!=0 && (i&1111)==0)   //if one line of hex printing is complete...
 		{
 			fprintf(logfile , "         ");
 			for(j=i-16 ; j<i ; j++)
@@ -317,19 +324,19 @@ void PrintData (const u_char * data , int Size)
 			fprintf(logfile , "\n");
 		} 
 		
-		if(i%16==0) fprintf(logfile , "   ");
+		if((i&1111)==0) fprintf(logfile , "   ");
 			fprintf(logfile , " %02X",(unsigned int)data[i]);
 				
 		if( i==Size-1)  //print the last spaces
 		{
-			for(j=0;j<15-i%16;j++) 
+			for(j=0;j<15-(i&1111);j++) 
 			{
 			  fprintf(logfile , "   "); //extra spaces
 			}
 			
 			fprintf(logfile , "         ");
 			
-			for(j=i-i%16 ; j<=i ; j++)
+			for(j=i-(i&1111) ; j<=i ; j++)
 			{
 				if(data[j]>=32 && data[j]<=128) 
 				{
