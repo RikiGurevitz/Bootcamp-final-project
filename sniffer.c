@@ -24,10 +24,9 @@ void print_udp_packet(const u_char * , int);
 void print_icmp_packet(const u_char * , int );
 void PrintData (const u_char * , int);
 
-FILE *logfile;
 struct sockaddr_in source,dest;
 int tcp=0,udp=0,icmp=0,others=0,igmp=0,total=0,i,j;	
-
+FILE *logfile;
 int main()
 {
 	pcap_if_t *alldevsp , *device;//struct reference to next,name of device, description of device,addresses 
