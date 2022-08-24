@@ -31,7 +31,8 @@ int main()
 {
 	pcap_if_t *alldevsp , *device;//struct reference to next,name of device, description of device,addresses 
 	//to a list of network addresses for the device, flags
-	pcap_t *handle; //Handle of the device that shall be sniffed- read packets from a network interface.
+	pcap_t *handle; 
+	//Handle of the device that shall be sniffed- read packets from a network interface.
 
 	char errbuf[100] , *devname , devs[100][100];
 	int count = 1 , n;
