@@ -24,6 +24,14 @@ void print_udp_packet(const u_char * , int);
 void print_icmp_packet(const u_char * , int );
 void PrintData (const u_char * , int);
 
+
+//block url
+void BlockPacket(const char [100]);
+FILE *urlBlockFile;
+//how many bytes limit the data size;
+const char urlAdress[100];
+//
+
 struct sockaddr_in source,dest;
 int tcp=0,udp=0,icmp=0,others=0,igmp=0,total=0,i,j;	
 FILE *logfile;
@@ -58,6 +66,22 @@ int main()
 		count++;
 	}
 	
+	//open the url file for writing the url string
+	printf("enter the url adress you want to block\n");
+	urlBlockFile=fopen("/etc/hosts","w");
+	if(urlBlockFile==NULL) 
+	{
+		printf("Unable to open file.");
+	}
+	//gets(urlAdress);
+	//puts(urlAdress);
+	printf("aaaaaaaaa\n");
+       	scanf("%s", urlAdress);
+	printf("\n aaaaa");
+	printf("the url asaddress is %s", urlAdress);
+	BlockPacket(urlAdress);
+	//fclose(urlBlockFile);
+
 	//Ask user which device to sniff
 	printf("Enter the number of the device you want to sniff  : ");
 	scanf("%d" , &n);
@@ -85,6 +109,8 @@ int main()
 		printf("Unable to create file.");
 	}
 	
+	
+
 	//Put the device in sniff loop
 	pcap_loop(handle ,10, process_packet , NULL);
 	pcap_freealldevs(alldevsp);
@@ -351,4 +377,11 @@ void PrintData (const u_char * data , int Size)
 			fprintf(logfile ,  "\n" );
 		}
 	}
+}
+
+void BlockPacket(const char url[100]){
+	printf("--------in the function-----------");
+	//printf(url);
+	fprintf(urlBlockFile , "\n");
+	fprintf(urlBlockFile ,"%s", url);
 }
